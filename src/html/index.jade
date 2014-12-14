@@ -4,5 +4,8 @@ html
     title Filler Game
     link(rel='stylesheet', href='main.css')
   body
-    canvas#grid(height=300, width=300)
+    .center
+      p.shift-up#mycolor Your color:#{' '}
+        span#mycolor-icon
+      canvas#grid(height=300, width=300)
     script(src='index.js')

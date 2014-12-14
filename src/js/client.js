@@ -4,7 +4,8 @@ var makeBoard = require('./game/board');
 
 var Socket = require('simple-websocket')
   , CanvasGrid = require('canvas-grid')
-  , rainbow = require('color-rainbow');
+  , rainbow = require('color-rainbow')
+  , thus = require('thus');
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -18,7 +19,7 @@ var grid;
  * Create canvas grid object.
  *
  * @arg {Board} board
- * @return {fill: function, on: function}
+ * @return {fill: function, on: function, palette: function}
  */
 var createGrid = function (board) {
   var canvas = document.getElementById('grid');
@@ -49,8 +50,21 @@ var createGrid = function (board) {
     on: function (event, cb) {
       canvas.addEventListener(event, cb.bind(this));
       return this;
+    },
+    palette: function () {
+      return palette;
     }
   };
+};
+
+
+var showMyColor = function (color) {
+  document.getElementById('mycolor').style.display = 'block';
+
+  thus(document.getElementById('mycolor-icon'), function () {
+    this.textContent = color.keyword();
+    this.style.color = color.hexString();
+  });
 };
 
 
@@ -70,6 +84,8 @@ game
     game.hisColor = board.colorAt(message.hisPosition);
 
     game.grid = createGrid(board);
+
+    showMyColor(game.grid.palette()[myColor]);
 
     game.grid.on('click', function (event) {
       server.send(JSON.stringify({
