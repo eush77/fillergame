@@ -6,8 +6,10 @@
   "license": "MIT",
   "scripts": {
     "postinstall": "ln -fs ../src/js/game node_modules/_game",
-    "make": "mkdir -p dist && npm run jade && npm run browserify",
+    "make": "mkdir -p dist && npm run images && npm run jade && npm run stylus && npm run browserify",
+    "images": "cp -v img/* dist",
     "jade": "jade src/html/index.jade -o dist",
+    "stylus": "stylus src/css/main.styl -o dist",
     "browserify": "browserify src/js/client.js >dist/index.js",
     "test": "tape test/*.js",
     "start": "node src/js/server.js"
@@ -35,6 +37,7 @@
     "browserify": "^7.0.1",
     "jade": "^1.8.1",
     "node-static": "^0.7.6",
+    "stylus": "^0.49.3",
     "tape": "^3.0.3",
     "thus": "^1.0.0"
   }
