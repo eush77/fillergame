@@ -23,7 +23,9 @@
   "keywords": [],
   "dependencies": {
     "algorithms": "^0.8.2",
+    "canvas-grid": "^0.2.1",
     "cmpby": "^0.1.0",
+    "color-rainbow": "0.0.0",
     "extend": "^2.0.0",
     "flatmap": "0.0.3",
     "fzip": "^0.2.0",

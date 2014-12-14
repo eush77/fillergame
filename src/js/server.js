@@ -11,58 +11,76 @@ var WebSocketServer = require('ws').Server
 var http = require('http');
 
 
-var newClient = function (client) {
-  client.id = guid();
-  client.onmessage = function (msg) {
-    games[client.id].send(msg.data);
-  };
+var protoGameHost = {
+  newClient: function (client) {
+    client.id = guid();
+    client.onmessage = function (msg) {
+      this.games[client.id].send(msg.data);
+    }.bind(this);
+  },
+
+  startGame: function (alice, bob) {
+    this.games[alice.id] = bob;
+    this.games[bob.id] = alice;
+
+    var board = makeBoard({
+      width: 10,
+      height: 10,
+      numColors: 3
+    });
+
+    var message = {
+      code: 'start',
+      numColors: board.numColors,
+      board: board.colors
+    };
+
+    var pAlice = { i: board.height - 1, j: 0 };
+    var pBob = { i: 0, j: board.width - 1 };
+
+    board.colorAt(pAlice, 0);
+    board.colorAt(pBob, 1);
+
+    fzip.each([alice, bob], [[pAlice, pBob], [pBob, pAlice]], function (player, pos) {
+      player.send(JSON.stringify(extend({}, message, {
+        myPosition: pos[0],
+        hisPosition: pos[1]
+      })));
+    });
+  }
 };
 
 
-var startGame = function (alice, bob) {
-  var board = makeBoard({
-    width: 5,
-    height: 5,
-    numColors: 3
-  });
+var createGameHost = function () {
+  var host = Object.create(protoGameHost);
 
-  var message = {
-    code: 'start',
-    board: board.colors
-  };
+  host.clientQueue = [];
+  host.games = {};
 
-  fzip.each([alice, bob], [[board.height - 1, 0], [0, board.width - 1]], function (player, pos) {
-    player.send(JSON.stringify(extend({}, message, {
-      position: { i: pos[0], j: pos[1] }
-    })));
-  });
+  return host;
 };
 
 
 var createWsServer = function (port) {
   var wsServer = new WebSocketServer({ port: port });
-  var clientQueue = [];
-  var games = {};
+  var game = createGameHost();
 
   wsServer.on('connection', function (alice) {
-    newClient(alice);
+    game.newClient(alice);
 
     // Find an opponent.
-    while (clientQueue.length) {
-      var bob = clientQueue.shift();
+    while (game.clientQueue.length) {
+      var bob = game.clientQueue.shift();
       if (bob.readyState != bob.OPEN) {
         // Gone.
         continue;
       }
 
-      games[alice.id] = bob;
-      games[bob.id] = alice;
-
-      return startGame(alice, bob);
+      return game.startGame(alice, bob);
     }
 
     alice.send(JSON.stringify({ code: 'wait' }));
-    clientQueue.push(alice);
+    game.clientQueue.push(alice);
   });
 };
 

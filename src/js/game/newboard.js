@@ -21,5 +21,5 @@ module.exports = function (options) {
     }
   }
 
-  return board(colors);
+  return board(options.numColors, colors);
 };
