@@ -5,7 +5,8 @@ var makeBoard = require('./game/board');
 var Socket = require('simple-websocket')
   , CanvasGrid = require('canvas-grid')
   , rainbow = require('color-rainbow')
-  , thus = require('thus');
+  , thus = require('thus')
+  , colorNamer = require('color-namer');
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -62,8 +63,9 @@ var showMyColor = function (color) {
   document.getElementById('mycolor').style.display = 'block';
 
   thus(document.getElementById('mycolor-icon'), function () {
-    this.textContent = color.keyword();
-    this.style.color = color.hexString();
+    var hex = color.hexString();
+    this.textContent = color.keyword() || colorNamer(hex, 'html')[0].name;
+    this.style.color = hex;
   });
 };
 
