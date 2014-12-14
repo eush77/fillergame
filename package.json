@@ -8,9 +8,9 @@
     "postinstall": "ln -fs ../src/js/game node_modules/_game",
     "make": "mkdir -p dist && npm run images && npm run html && npm run css && npm run js",
     "images": "cp -v img/* dist",
-    "html": "jade src/html/index.jade -o dist",
-    "css": "stylus <src/css/main.styl |cat node_modules/normalize.css/normalize.css - >dist/main.css",
-    "js": "browserify src/js/client.js >dist/index.js",
+    "html": "jade <src/html/index.jade >dist/index.html",
+    "css": "stylus <src/css/main.styl |cat node_modules/normalize.css/normalize.css - |cleancss >dist/main.css",
+    "js": "browserify src/js/client.js |uglifyjs >dist/index.js",
     "test": "tape test/*.js",
     "start": "node src/js/server.js"
   },
@@ -36,10 +36,12 @@
   },
   "devDependencies": {
     "browserify": "^7.0.1",
+    "clean-css": "^2.2.22",
     "jade": "^1.8.1",
     "node-static": "^0.7.6",
     "stylus": "^0.49.3",
     "tape": "^3.0.3",
-    "thus": "^1.0.0"
+    "thus": "^1.0.0",
+    "uglify-js": "^2.4.16"
   }
 }
