@@ -9,7 +9,7 @@
     "make": "mkdir -p dist && npm run images && npm run html && npm run css && npm run js",
     "images": "cp -v img/* dist",
     "html": "jade <src/html/index.jade >dist/index.html",
-    "css": "stylus <src/css/main.styl |cat node_modules/normalize.css/normalize.css - |cleancss >dist/main.css",
+    "css": "stylus <src/css/main.styl |cat node_modules/normalize.css/normalize.css - |autoprefixer |cleancss >dist/main.css",
     "js": "browserify src/js/client.js |uglifyjs >dist/index.js",
     "test": "tape test/*.js",
     "start": "node src/js/server.js"
@@ -35,6 +35,7 @@
     "uniq": "^1.0.1"
   },
   "devDependencies": {
+    "autoprefixer": "^4.0.0",
     "browserify": "^7.0.1",
     "clean-css": "^2.2.22",
     "jade": "^1.8.1",
