@@ -9,6 +9,7 @@ var board = require('./board');
  * @arg {object} options
  * @property {number} width
  * @property {number} height
+ * @property {number} [startColor=0]
  * @property {number} numColors
  */
 module.exports = function (options) {
@@ -17,7 +18,7 @@ module.exports = function (options) {
   for (var i = 0; i < options.height; ++i) {
     colors[i] = [];
     for (var j = 0; j < options.width; ++j) {
-      colors[i][j] = Math.floor(Math.random() * options.numColors);
+      colors[i][j] = options.startColor + Math.floor(Math.random() * options.numColors);
     }
   }
 

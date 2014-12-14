@@ -26,20 +26,22 @@ var protoGameHost = {
     var board = makeBoard({
       width: 10,
       height: 10,
+      startColor: 1,
       numColors: 3
     });
+
+    var pAlice = { i: board.height - 1, j: 0 };
+    var pBob = { i: 0, j: board.width - 1 };
+
+    board.colorAt(pAlice, 0);
+    board.colorAt(pBob, 4);
+    board.numColors = 5;
 
     var message = {
       code: 'start',
       numColors: board.numColors,
       board: board.colors
     };
-
-    var pAlice = { i: board.height - 1, j: 0 };
-    var pBob = { i: 0, j: board.width - 1 };
-
-    board.colorAt(pAlice, 0);
-    board.colorAt(pBob, 1);
 
     fzip.each([alice, bob], [[pAlice, pBob], [pBob, pAlice]], function (player, pos) {
       player.send(JSON.stringify(extend({}, message, {
