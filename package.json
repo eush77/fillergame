@@ -1,0 +1,32 @@
+{
+  "name": "fillergame",
+  "version": "0.0.0",
+  "description": "Multiplayer game on matrix coloring",
+  "author": "Eugene Sharygin <eush77@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "ln -s ../src/game node_modules/_game",
+    "test": "tape test/*.js"
+  },
+  "homepage": "https://github.com/eush77/fillergame",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eush77/fillergame"
+  },
+  "bugs": {
+    "url": "https://github.com/eush77/fillergame/issues"
+  },
+  "keywords": [],
+  "dependencies": {
+    "algorithms": "^0.8.2",
+    "cmpby": "^0.1.0",
+    "extend": "^2.0.0",
+    "flatmap": "0.0.3",
+    "fzip": "^0.2.0",
+    "uniq": "^1.0.1"
+  },
+  "devDependencies": {
+    "tape": "^3.0.3",
+    "thus": "^1.0.0"
+  }
+}
