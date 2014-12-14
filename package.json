@@ -6,11 +6,11 @@
   "license": "MIT",
   "scripts": {
     "postinstall": "ln -fs ../src/js/game node_modules/_game",
-    "make": "mkdir -p dist && npm run images && npm run jade && npm run stylus && npm run browserify",
+    "make": "mkdir -p dist && npm run images && npm run html && npm run css && npm run js",
     "images": "cp -v img/* dist",
-    "jade": "jade src/html/index.jade -o dist",
-    "stylus": "stylus src/css/main.styl -o dist",
-    "browserify": "browserify src/js/client.js >dist/index.js",
+    "html": "jade src/html/index.jade -o dist",
+    "css": "stylus <src/css/main.styl |cat node_modules/normalize.css/normalize.css - >dist/main.css",
+    "js": "browserify src/js/client.js >dist/index.js",
     "test": "tape test/*.js",
     "start": "node src/js/server.js"
   },
@@ -31,6 +31,7 @@
     "extend": "^2.0.0",
     "flatmap": "0.0.3",
     "fzip": "^0.2.0",
+    "normalize.css": "^3.0.2",
     "uniq": "^1.0.1"
   },
   "devDependencies": {
