@@ -40,6 +40,7 @@ var createGrid = function (board) {
   return {
     fill: function (i, j, color) {
       board.regions[i][j].forEach(function (pos) {
+        board.colors[pos.i][pos.j] = color;
         grid.fillCell(pos.i, pos.j, palette[color].hexString());
       });
       board.recomputeRegions();
