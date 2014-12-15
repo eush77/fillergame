@@ -16,16 +16,18 @@ var protoBoard = {
   },
 
   /**
-   * Get list of the (i,j)'s region's neighbors of the given color.
+   * Get list of the (i,j)'s region's neighbors of another color.
    *
-   * @arg {number} i
-   * @arg {number} j
-   * @arg {number} color
+   * @arg {i: number, j: number} position
    * @return {[{i: number, j: number}]}
    */
-  neighborsOfColor: function (i, j, color) {
+  border: function (position) {
+    var i = position.i;
+    var j = position.j;
+    var baseColor = this.colors[i][j];
+
     var matches = function (i, j) {
-      return this.colors[i] && this.colors[i][j] === color;
+      return this.colors[i] && this.colors[i][j] !== baseColor;
     }.bind(this);
 
     var neighbors = flatmap(this.regions[i][j], function (cell) {

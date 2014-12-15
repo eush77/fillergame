@@ -7,7 +7,8 @@ var Socket = require('simple-websocket')
   , rainbow = require('color-rainbow')
   , thus = require('thus')
   , colorNamer = require('color-namer')
-  , declared = require('declared');
+  , declared = require('declared')
+  , humane = require('humane-js').create({ timeout: 500 });
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -15,7 +16,6 @@ var EventEmitter = require('events').EventEmitter;
 var server = new Socket('ws://localhost:2020');
 var game = new EventEmitter;
 var grid;
-
 
 
 var showMyColor = function (color) {
@@ -35,30 +35,41 @@ server.on('message', function (message) {
 
 game
   .on('wait', function () {
-    console.log('Waiting for the opponent.');
+    humane.log('Waiting for the opponent&hellip;', { timeout: 0 });
   })
   .on('start', function (message) {
-    console.log('Let the carnage begin!');
+    humane.remove();
+    humane.log('Let the carnage begin!', { timeout: 1500 });
 
     var board = Board(message.numColors, message.board);
     var player = message.player;
-    var opponent = message.opponent;
-    var playerColor = board.colorAt(player);
-    game.opponentColor = board.colorAt(opponent);
+    game.opponent = message.opponent;
 
     var canvas = document.getElementById('grid');
     var palette = rainbow.create(board.numColors);
 
     game.grid = Grid(board, canvas, palette);
-    game.grid.on('click', function (i, j, color) {
-      color = declared(color, playerColor);
 
-      board.regions[i][j].forEach(function (pos) {
-        this.fill(pos.i, pos.j, color);
+    game.grid.on('click', function (i, j, owner) {
+      owner = declared(owner, player);
+      var ownerColor = board.colorAt(owner);
+      var targetRegion = board.regions[i][j];
+
+      var canProceed = board.border(owner).some(function (pos) {
+        return board.regionAt(pos) == targetRegion;
+      });
+
+      if (!canProceed) {
+        humane.log('Invalid move!');
+        return;
+      }
+
+      targetRegion.forEach(function (pos) {
+        this.fill(pos.i, pos.j, ownerColor);
       }, this);
       board.recomputeRegions();
 
-      if (color == playerColor) {
+      if (owner == player) {
         server.send(JSON.stringify({
           code: 'click',
           i: i,
@@ -67,9 +78,9 @@ game
       }
     });
 
-    showMyColor(palette[playerColor]);
+    showMyColor(palette[board.colorAt(player)]);
   })
   .on('click', function (message) {
     // Opponent clicked some cell.
-    game.grid.emit('click', message.i, message.j, game.opponentColor);
+    game.grid.emit('click', message.i, message.j, game.opponent);
   });
