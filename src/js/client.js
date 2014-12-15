@@ -50,32 +50,44 @@ game
 
     game.grid = Grid(board, canvas, palette);
 
+    var validateMove = function (region) {
+      var instantWin = region == board.regionAt(game.opponent);
+
+      var unreachable = !board.border(player).some(function (pos) {
+        return board.regionAt(pos) == region;
+      });
+
+      var invalidMove = instantWin || unreachable;
+
+      if (invalidMove) {
+        humane.log('Invalid move!');
+      }
+
+      return !invalidMove;
+    };
+
     game.grid.on('click', function (i, j, owner) {
       owner = declared(owner, player);
       var ownerColor = board.colorAt(owner);
       var targetRegion = board.regions[i][j];
 
-      var canProceed = board.border(owner).some(function (pos) {
-        return board.regionAt(pos) == targetRegion;
-      });
-
-      if (!canProceed) {
-        humane.log('Invalid move!');
-        return;
-      }
-
-      targetRegion.forEach(function (pos) {
-        this.fill(pos.i, pos.j, ownerColor);
-      }, this);
-      board.recomputeRegions();
-
       if (owner == player) {
+        if (!validateMove(targetRegion)) {
+          return;
+        }
+
         server.send(JSON.stringify({
           code: 'click',
           i: i,
           j: j
         }));
       }
+
+      targetRegion.forEach(function (pos) {
+        this.fill(pos.i, pos.j, ownerColor);
+      }, this);
+
+      board.recomputeRegions();
     });
 
     showMyColor(palette[board.colorAt(player)]);
