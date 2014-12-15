@@ -1,7 +1,8 @@
 'use strict';
 
 var Board = require('./game/board')
-  , Grid = require('./client/grid');
+  , Grid = require('./client/grid')
+  , wsconfig = require('../wsconfig.json');
 
 var Socket = require('simple-websocket')
   , rainbow = require('color-rainbow')
@@ -25,7 +26,7 @@ var showMyColor = function (color) {
 };
 
 
-var Game = function () {
+var Game = function (server) {
   return new EventEmitter().
     on('wait', function () {
       humane.log('Waiting for the opponent&hellip;', { timeout: 0 });
@@ -39,8 +40,8 @@ var Game = function () {
       game.board = Board(message.numColors, message.board);
 
       var canvas = document.getElementById('grid');
-      var palette = rainbow.create(board.numColors);
-      game.grid = Grid(board, canvas, palette);
+      var palette = rainbow.create(game.board.numColors);
+      game.grid = Grid(game.board, canvas, palette);
 
       var validateMove = function (region) {
         var instantWin = region == game.board.regionAt(game.opponent);
@@ -90,7 +91,7 @@ var Game = function () {
         game.board.recomputeRegions();
       });
 
-      showMyColor(palette[board.colorAt(player)]);
+      showMyColor(palette[game.board.colorAt(game.player)]);
 
       humane.remove();
       humane.log('Let the carnage begin!', { timeout: 1500 });
@@ -106,15 +107,16 @@ var Game = function () {
 /**
  * Start the game client.
  *
+ * @arg {string} wshost - Back-end WebSocket server host.
  * @arg {number} wsport - Back-end WebSocket server port.
  */
-var start = function (wsport) {
-  var game = Game();
+var start = function (wshost, wsport) {
+  var server = new Socket('ws://' + wshost + ':' + wsport);
+  var game = Game(server);
 
-  new Socket('ws://localhost:' + wsport)
-    .on('message', function (message) {
-      game.emit(message.code, message);
-    });
+  server.on('message', function (message) {
+    game.emit(message.code, message);
+  });
 };
 
-start(2020);
+start(wsconfig.host, wsconfig.port);

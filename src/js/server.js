@@ -1,6 +1,7 @@
 'use strict';
 
-var Board = require('./game/newboard');
+var Board = require('./game/newboard')
+  , wsconfig = require('../wsconfig.json');
 
 var WebSocketServer = require('ws').Server
   , guid = require('guid').raw
@@ -110,4 +111,4 @@ var start = function (port, wsport) {
   console.log('Server started at localhost:' + port);
 };
 
-start(5001, 2020);
+start(5001, wsconfig.port);
