@@ -14,11 +14,6 @@ var Socket = require('simple-websocket')
 var EventEmitter = require('events').EventEmitter;
 
 
-var server = new Socket('ws://localhost:2020');
-var game = new EventEmitter;
-var grid;
-
-
 var showMyColor = function (color) {
   document.getElementById('mycolor').style.display = 'block';
 
@@ -30,78 +25,96 @@ var showMyColor = function (color) {
 };
 
 
-server.on('message', function (message) {
-  game.emit(message.code, message);
-});
+var Game = function () {
+  return new EventEmitter().
+    on('wait', function () {
+      humane.log('Waiting for the opponent&hellip;', { timeout: 0 });
+    }).
 
-game
-  .on('wait', function () {
-    humane.log('Waiting for the opponent&hellip;', { timeout: 0 });
-  })
-  .on('start', function (message) {
-    humane.remove();
-    humane.log('Let the carnage begin!', { timeout: 1500 });
+    on('start', function (message) {
+      var game = this;
+      game.player = message.player;
+      game.opponent = message.opponent;
 
-    var board = Board(message.numColors, message.board);
-    var player = message.player;
-    game.opponent = message.opponent;
+      game.board = Board(message.numColors, message.board);
 
-    var canvas = document.getElementById('grid');
-    var palette = rainbow.create(board.numColors);
+      var canvas = document.getElementById('grid');
+      var palette = rainbow.create(board.numColors);
+      game.grid = Grid(board, canvas, palette);
 
-    game.grid = Grid(board, canvas, palette);
+      var validateMove = function (region) {
+        var instantWin = region == game.board.regionAt(game.opponent);
 
-    var validateMove = function (region) {
-      var instantWin = region == board.regionAt(game.opponent);
+        var unreachable = !game.board.border(game.player).some(function (pos) {
+          return game.board.regionAt(pos) == region;
+        });
 
-      var unreachable = !board.border(player).some(function (pos) {
-        return board.regionAt(pos) == region;
-      });
+        var invalidMove = instantWin || unreachable;
 
-      var invalidMove = instantWin || unreachable;
-
-      if (invalidMove) {
-        humane.log('Invalid move!');
-      }
-
-      return !invalidMove;
-    };
-
-    game.grid.on('click', function (i, j, owner) {
-      owner = declared(owner, player);
-      var ownerColor = board.colorAt(owner);
-      var targetRegion = board.regions[i][j];
-      var targetColor = board.colors[i][j];
-
-      if (owner == player) {
-        if (!validateMove(targetRegion)) {
-          return;
+        if (invalidMove) {
+          humane.log('Invalid move!');
         }
 
-        server.send(JSON.stringify({
-          code: 'move',
-          i: i,
-          j: j
-        }));
-      }
+        return !invalidMove;
+      };
 
-      // Select regions adjacent to the owner's region.
-      var regions = uniq(board.border(owner).filter(function (cell) {
-        return board.colorAt(cell) == targetColor;
-      }).map(board.regionAt.bind(board)));
+      this.grid.on('click', function (i, j, owner) {
+        owner = declared(owner, game.player);
+        var ownerColor = game.board.colorAt(owner);
+        var targetRegion = game.board.regions[i][j];
+        var targetColor = game.board.colors[i][j];
 
-      regions.forEach(function (region) {
-        region.forEach(function (pos) {
-          this.fill(pos.i, pos.j, ownerColor);
+        if (owner == game.player) {
+          if (!validateMove(targetRegion)) {
+            return;
+          }
+
+          server.send(JSON.stringify({
+            code: 'move',
+            i: i,
+            j: j
+          }));
+        }
+
+        // Select regions adjacent to the owner's region.
+        var regions = uniq(game.board.border(owner).filter(function (cell) {
+          return game.board.colorAt(cell) == targetColor;
+        }).map(game.board.regionAt.bind(game.board)));
+
+        regions.forEach(function (region) {
+          region.forEach(function (pos) {
+            this.fill(pos.i, pos.j, ownerColor);
+          }, this);
         }, this);
-      }, this);
 
-      board.recomputeRegions();
+        game.board.recomputeRegions();
+      });
+
+      showMyColor(palette[board.colorAt(player)]);
+
+      humane.remove();
+      humane.log('Let the carnage begin!', { timeout: 1500 });
+    }).
+
+    on('move', function (message) {
+      // Opponent clicked some cell.
+      this.grid.emit('click', message.i, message.j, this.opponent);
     });
+};
 
-    showMyColor(palette[board.colorAt(player)]);
-  })
-  .on('move', function (message) {
-    // Opponent clicked some cell.
-    game.grid.emit('click', message.i, message.j, game.opponent);
-  });
+
+/**
+ * Start the game client.
+ *
+ * @arg {number} wsport - Back-end WebSocket server port.
+ */
+var start = function (wsport) {
+  var game = Game();
+
+  new Socket('ws://localhost:' + wsport)
+    .on('message', function (message) {
+      game.emit(message.code, message);
+    });
+};
+
+start(2020);
