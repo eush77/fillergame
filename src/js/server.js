@@ -5,6 +5,16 @@ var wsconfig = require('../wsconfig.json')
   , startHttpServer = require('./server/httpserver');
 
 
+var httpPort = (function (argv) {
+  if (argv.length > 1) {
+    console.log('Usage:  server.js [<port>]');
+    process.exit(1);
+  }
+
+  return argv[0] || 5001;
+}(process.argv.slice(2)));
+
+
 /**
  * Start the game server.
  *
@@ -18,4 +28,4 @@ var start = function (port, wsport) {
   console.log('Server started at localhost:' + port);
 };
 
-start(5001, wsconfig.port);
+start(httpPort, wsconfig.port);
