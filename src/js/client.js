@@ -77,7 +77,7 @@ game
         }
 
         server.send(JSON.stringify({
-          code: 'click',
+          code: 'move',
           i: i,
           j: j
         }));
@@ -92,7 +92,7 @@ game
 
     showMyColor(palette[board.colorAt(player)]);
   })
-  .on('click', function (message) {
+  .on('move', function (message) {
     // Opponent clicked some cell.
     game.grid.emit('click', message.i, message.j, game.opponent);
   });
