@@ -1,6 +1,6 @@
 'use strict';
 
-var makeBoard = require('./game/newboard');
+var Board = require('./game/newboard');
 
 var WebSocketServer = require('ws').Server
   , guid = require('guid').raw
@@ -23,7 +23,7 @@ var protoGameHost = {
     this.games[alice.id] = bob;
     this.games[bob.id] = alice;
 
-    var board = makeBoard({
+    var board = Board({
       width: 10,
       height: 10,
       startColor: 1,

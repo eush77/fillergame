@@ -1,6 +1,6 @@
 'use strict';
 
-var board = require('./board');
+var Board = require('./board');
 
 
 /**
@@ -22,5 +22,5 @@ module.exports = function (options) {
     }
   }
 
-  return board(options.numColors, colors);
+  return Board(options.numColors, colors);
 };

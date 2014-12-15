@@ -1,6 +1,6 @@
 'use strict';
 
-var makeBoard = require('./game/board')
+var Board = require('./game/board')
   , Grid = require('./client/grid');
 
 var Socket = require('simple-websocket')
@@ -40,7 +40,7 @@ game
   .on('start', function (message) {
     console.log('Let the carnage begin!');
 
-    var board = makeBoard(message.numColors, message.board);
+    var board = Board(message.numColors, message.board);
     var player = message.player;
     var opponent = message.opponent;
     var playerColor = board.colorAt(player);
