@@ -8,7 +8,8 @@ var Socket = require('simple-websocket')
   , thus = require('thus')
   , colorNamer = require('color-namer')
   , declared = require('declared')
-  , humane = require('humane-js').create({ timeout: 500 });
+  , humane = require('humane-js').create({ timeout: 500 })
+  , uniq = require('uniq');
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -70,6 +71,7 @@ game
       owner = declared(owner, player);
       var ownerColor = board.colorAt(owner);
       var targetRegion = board.regions[i][j];
+      var targetColor = board.colors[i][j];
 
       if (owner == player) {
         if (!validateMove(targetRegion)) {
@@ -83,8 +85,15 @@ game
         }));
       }
 
-      targetRegion.forEach(function (pos) {
-        this.fill(pos.i, pos.j, ownerColor);
+      // Select regions adjacent to the owner's region.
+      var regions = uniq(board.border(owner).filter(function (cell) {
+        return board.colorAt(cell) == targetColor;
+      }).map(board.regionAt.bind(board)));
+
+      regions.forEach(function (region) {
+        region.forEach(function (pos) {
+          this.fill(pos.i, pos.j, ownerColor);
+        }, this);
       }, this);
 
       board.recomputeRegions();
