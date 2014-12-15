@@ -45,8 +45,8 @@ var protoGameHost = {
 
     fzip.each([alice, bob], [[pAlice, pBob], [pBob, pAlice]], function (player, pos) {
       player.send(JSON.stringify(extend({}, message, {
-        myPosition: pos[0],
-        hisPosition: pos[1]
+        player: pos[0],
+        opponent: pos[1]
       })));
     });
   }

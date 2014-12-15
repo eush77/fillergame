@@ -1,12 +1,13 @@
 'use strict';
 
-var makeBoard = require('./game/board');
+var makeBoard = require('./game/board')
+  , Grid = require('./client/grid');
 
 var Socket = require('simple-websocket')
-  , CanvasGrid = require('canvas-grid')
   , rainbow = require('color-rainbow')
   , thus = require('thus')
-  , colorNamer = require('color-namer');
+  , colorNamer = require('color-namer')
+  , declared = require('declared');
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -15,48 +16,6 @@ var server = new Socket('ws://localhost:2020');
 var game = new EventEmitter;
 var grid;
 
-
-/**
- * Create canvas grid object.
- *
- * @arg {Board} board
- * @return {fill: function, on: function, palette: function}
- */
-var createGrid = function (board) {
-  var canvas = document.getElementById('grid');
-
-  grid = new CanvasGrid(canvas);
-  grid.drawMatrix({
-    x: board.width,
-    y: board.height
-  });
-
-  var palette = rainbow.create(board.numColors);
-
-  board.colors.forEach(function (row, i) {
-    row.forEach(function (c, j) {
-      grid.fillCell(i, j, palette[c].hexString());
-    });
-  });
-
-  return {
-    fill: function (i, j, color) {
-      board.regions[i][j].forEach(function (pos) {
-        board.colors[pos.i][pos.j] = color;
-        grid.fillCell(pos.i, pos.j, palette[color].hexString());
-      });
-      board.recomputeRegions();
-      return this;
-    },
-    on: function (event, cb) {
-      canvas.addEventListener(event, cb.bind(this));
-      return this;
-    },
-    palette: function () {
-      return palette;
-    }
-  };
-};
 
 
 var showMyColor = function (color) {
@@ -82,24 +41,35 @@ game
     console.log('Let the carnage begin!');
 
     var board = makeBoard(message.numColors, message.board);
-    var myColor = board.colorAt(message.myPosition);
-    game.hisColor = board.colorAt(message.hisPosition);
+    var player = message.player;
+    var opponent = message.opponent;
+    var playerColor = board.colorAt(player);
+    game.opponentColor = board.colorAt(opponent);
 
-    game.grid = createGrid(board);
+    var canvas = document.getElementById('grid');
+    var palette = rainbow.create(board.numColors);
 
-    showMyColor(game.grid.palette()[myColor]);
+    game.grid = Grid(board, canvas, palette);
+    game.grid.on('click', function (i, j, color) {
+      color = declared(color, playerColor);
 
-    game.grid.on('click', function (event) {
-      server.send(JSON.stringify({
-        code: 'click',
-        i: event.gridInfo.x,
-        j: event.gridInfo.y
-      }));
+      board.regions[i][j].forEach(function (pos) {
+        this.fill(pos.i, pos.j, color);
+      }, this);
+      board.recomputeRegions();
 
-      this.fill(event.gridInfo.x, event.gridInfo.y, myColor);
+      if (color == playerColor) {
+        server.send(JSON.stringify({
+          code: 'click',
+          i: i,
+          j: j
+        }));
+      }
     });
+
+    showMyColor(palette[playerColor]);
   })
   .on('click', function (message) {
     // Opponent clicked some cell.
-    game.grid.fill(message.i, message.j, game.hisColor);
+    game.grid.emit('click', message.i, message.j, game.opponentColor);
   });
