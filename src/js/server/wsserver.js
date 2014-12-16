@@ -3,8 +3,7 @@
 var GameHost = require('./gamehost')
   , Player = require('./player');
 
-var WebSocketServer = require('ws').Server
-  , guid = require('guid').raw;
+var WebSocketServer = require('ws').Server;
 
 
 /**
@@ -19,7 +18,7 @@ module.exports = function (port) {
   var clientQueue = [];
 
   return wsServer.on('connection', function (socket) {
-    var alice = Player(socket, guid(), function (message) {
+    var alice = Player(socket, function (message) {
       game.onmessage(this, message);
     });
     console.log(alice.id, 'connected');

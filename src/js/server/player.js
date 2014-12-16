@@ -1,5 +1,7 @@
 'use strict';
 
+var guid = require('guid').raw;
+
 
 var protoPlayer = {
   /**
@@ -29,11 +31,10 @@ var protoPlayer = {
  * One socket can be associated with no more than a single player.
  *
  * @arg {ws.WebSocket} socket
- * @arg {number} id
  * @arg {function(message)} [onmessage]
  * @return {Player}
  */
-module.exports = function (socket, id, onmessage) {
+module.exports = function (socket, onmessage) {
   onmessage = onmessage || function () {};
 
   var player = Object.create(protoPlayer, {
@@ -42,7 +43,7 @@ module.exports = function (socket, id, onmessage) {
     },
     id: {
       enumerable: true,
-      value: id
+      value: guid()
     },
     onmessage: {
       writable: true,
