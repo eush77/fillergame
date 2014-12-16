@@ -1,6 +1,7 @@
 'use strict';
 
-var GameHost = require('./gamehost');
+var GameHost = require('./gamehost')
+  , Player = require('./player');
 
 var WebSocketServer = require('ws').Server
   , guid = require('guid').raw;
@@ -17,16 +18,16 @@ module.exports = function (port) {
   var game = GameHost();
   var clientQueue = [];
 
-  return wsServer.on('connection', function (alice) {
-    alice.id = guid();
-    alice.onmessage = function (msg) {
-      game.onmessage(alice, msg.data);
-    };
+  return wsServer.on('connection', function (socket) {
+    var alice = Player(socket, guid(), function (message) {
+      game.onmessage(this, message);
+    });
+    console.log(alice.id, 'connected');
 
     // Find an opponent.
     while (clientQueue.length) {
       var bob = clientQueue.shift();
-      if (bob.readyState != bob.OPEN) {
+      if (!bob.connected()) {
         // Gone.
         continue;
       }
@@ -34,7 +35,7 @@ module.exports = function (port) {
       return game.startGame(alice, bob);
     }
 
-    game.send(alice, 'wait');
+    alice.send({ code: 'wait' });
     clientQueue.push(alice);
   });
 };

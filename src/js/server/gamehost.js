@@ -12,10 +12,6 @@ var protoGameHost = {
     this.games[alice.id].send(message);
   },
 
-  send: function (alice, code) {
-    alice.send(JSON.stringify({ code: code }));
-  },
-
   startGame: function (alice, bob) {
     this.games[alice.id] = bob;
     this.games[bob.id] = alice;
@@ -41,10 +37,10 @@ var protoGameHost = {
     };
 
     fzip.each([alice, bob], [[pAlice, pBob], [pBob, pAlice]], function (player, pos) {
-      player.send(JSON.stringify(extend({}, message, {
+      player.send(extend({}, message, {
         player: pos[0],
         opponent: pos[1]
-      })));
+      }));
     });
   }
 };
