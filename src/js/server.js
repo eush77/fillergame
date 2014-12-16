@@ -1,8 +1,8 @@
 'use strict';
 
 var wsconfig = require('../wsconfig.json')
-  , startWsServer = require('./server/wsserver')
-  , startHttpServer = require('./server/httpserver');
+  , WsServer = require('./server/wsserver')
+  , HttpServer = require('./server/httpserver');
 
 
 var httpPort = (function (argv) {
@@ -22,8 +22,8 @@ var httpPort = (function (argv) {
  * @arg {number} wsport - Back-end WebSocket server port.
  */
 var start = function (port, wsport) {
-  startWsServer(wsport);
-  startHttpServer(port);
+  WsServer().listen(wsport);
+  HttpServer().listen(port);
 
   console.log('Server started at localhost:' + port);
 };

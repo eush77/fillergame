@@ -6,13 +6,7 @@ var GameHost = require('./gamehost')
 var WebSocketServer = require('ws').Server;
 
 
-/**
- * Create WebSocket game server.
- *
- * @arg {number} port
- * @return {ws.Server}
- */
-module.exports = function (port) {
+var startWsServer = function (port) {
   var wsServer = new WebSocketServer({ port: port });
   var game = GameHost();
   var clientQueue = [];
@@ -37,4 +31,18 @@ module.exports = function (port) {
     alice.send({ code: 'wait' });
     clientQueue.push(alice);
   });
+
+  return wsServer;
+};
+
+
+/**
+ * Create WebSocket game server.
+ *
+ * @return {WsServer}
+ */
+module.exports = function () {
+  return {
+    listen: startWsServer
+  };
 };
