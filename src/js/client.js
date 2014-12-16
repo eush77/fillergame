@@ -2,7 +2,8 @@
 
 var Board = require('./game/board')
   , Grid = require('./client/grid')
-  , wsconfig = require('../wsconfig.json');
+  , wsconfig = require('../wsconfig.json')
+  , stat = require('./game/stat');
 
 var Socket = require('simple-websocket')
   , rainbow = require('color-rainbow')
@@ -26,6 +27,15 @@ var showMyColor = function (color) {
 };
 
 
+var win = function () {
+  humane.log('You win!', { timeout: 0 });
+};
+
+var lose = function () {
+  humane.log('You lost.', { timeout: 0 });
+};
+
+
 var Game = function (server) {
   return new EventEmitter().
     on('wait', function () {
@@ -38,6 +48,8 @@ var Game = function (server) {
       game.opponent = message.opponent;
 
       game.board = Board(message.numColors, message.board);
+      game.playerColor = game.board.colorAt(game.player);
+      game.opponentColor = game.board.colorAt(game.opponent);
 
       var canvas = document.getElementById('grid');
       var palette = rainbow.create(game.board.numColors);
@@ -57,6 +69,20 @@ var Game = function (server) {
         }
 
         return !invalidMove;
+      };
+
+      var checkResult = function () {
+        var overlord = stat.overlord(game.board);
+        if (overlord.size * 2 < game.board.size) {
+          return;
+        }
+
+        if (overlord.color == game.playerColor) {
+          win();
+        }
+        else if (overlord.color == game.opponentColor) {
+          lose();
+        }
       };
 
       this.grid.on('click', function (i, j, owner) {
@@ -89,9 +115,10 @@ var Game = function (server) {
         }, this);
 
         game.board.recomputeRegions();
+        checkResult();
       });
 
-      showMyColor(palette[game.board.colorAt(game.player)]);
+      showMyColor(palette[game.playerColor]);
 
       humane.remove();
       humane.log('Let the carnage begin!', { timeout: 1500 });

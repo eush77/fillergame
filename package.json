@@ -25,6 +25,7 @@
   "keywords": [],
   "dependencies": {
     "algorithms": "^0.8.2",
+    "array-range": "^1.0.1",
     "canvas-grid": "^0.2.1",
     "cmpby": "^0.1.0",
     "color-namer": "^0.3.0",

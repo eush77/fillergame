@@ -88,6 +88,12 @@ module.exports = function (numColors, colors) {
       enumerable: true,
       value: colors[0].length
     },
+    size: {
+      enumerable: true,
+      get: function () {
+        return this.width * this.height;
+      }
+    },
     numColors: {
       enumerable: true,
       writable: true,
