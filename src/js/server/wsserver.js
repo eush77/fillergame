@@ -2,7 +2,8 @@
 
 var GameHost = require('./gamehost');
 
-var WebSocketServer = require('ws').Server;
+var WebSocketServer = require('ws').Server
+  , guid = require('guid').raw;
 
 
 /**
@@ -14,13 +15,17 @@ var WebSocketServer = require('ws').Server;
 module.exports = function (port) {
   var wsServer = new WebSocketServer({ port: port });
   var game = GameHost();
+  var clientQueue = [];
 
   return wsServer.on('connection', function (alice) {
-    game.newClient(alice);
+    alice.id = guid();
+    alice.onmessage = function (msg) {
+      game.onmessage(alice, msg.data);
+    };
 
     // Find an opponent.
-    while (game.clientQueue.length) {
-      var bob = game.clientQueue.shift();
+    while (clientQueue.length) {
+      var bob = clientQueue.shift();
       if (bob.readyState != bob.OPEN) {
         // Gone.
         continue;
@@ -29,7 +34,7 @@ module.exports = function (port) {
       return game.startGame(alice, bob);
     }
 
-    alice.send(JSON.stringify({ code: 'wait' }));
-    game.clientQueue.push(alice);
+    game.send(alice, 'wait');
+    clientQueue.push(alice);
   });
 };

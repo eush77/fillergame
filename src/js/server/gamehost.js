@@ -2,18 +2,18 @@
 
 var Board = require('../game/newboard');
 
-var guid = require('guid').raw
-  , fzip = require('fzip')
+var fzip = require('fzip')
   , extend = require('extend')
   , thus = require('thus');
 
 
 var protoGameHost = {
-  newClient: function (client) {
-    client.id = guid();
-    client.onmessage = function (msg) {
-      this.games[client.id].send(msg.data);
-    }.bind(this);
+  onmessage: function (alice, message) {
+    this.games[alice.id].send(message);
+  },
+
+  send: function (alice, code) {
+    alice.send(JSON.stringify({ code: code }));
   },
 
   startGame: function (alice, bob) {
@@ -55,7 +55,6 @@ var protoGameHost = {
  */
 module.exports = function () {
   return thus(Object.create(protoGameHost), function () {
-    this.clientQueue = [];
     this.games = {};
     return this;
   });
