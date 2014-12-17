@@ -21,10 +21,30 @@ var protoGrid = extend(new EventEmitter, {
     return this;
   },
 
+  /**
+   * Temporarily disable grid listeners.
+   *
+   * @return {Grid}
+   */
+  disable: function () {
+    this.disabled = true;
+  },
+
+  /**
+   * Re-enable grid listeners.
+   *
+   * @return {Grid}
+   */
+  enable: function () {
+    this.disabled = false;
+  },
+
   // Auto-subscribe to canvas events.
   on: function (type, listener) {
     this.canvas.addEventListener(type, function (event) {
-      this.emit(type, event.gridInfo.y, event.gridInfo.x);
+      if (!this.disabled) {
+        this.emit(type, event.gridInfo.y, event.gridInfo.x);
+      }
     }.bind(this));
 
     EventEmitter.prototype.on.call(this, type, listener);

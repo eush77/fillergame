@@ -85,7 +85,7 @@ var Game = function (server) {
         }
       };
 
-      this.grid.on('click', function (i, j, owner) {
+      game.grid.on('click', function (i, j, owner) {
         owner = declared(owner, game.player);
         var ownerColor = game.board.colorAt(owner);
         var targetRegion = game.board.regions[i][j];
@@ -115,6 +115,16 @@ var Game = function (server) {
         }, this);
 
         game.board.recomputeRegions();
+
+        if (owner == game.player) {
+          game.grid.disable();
+          humane.log('Wait...', { timeout: 0 });
+        }
+        else {
+          humane.remove();
+          game.grid.enable();
+        }
+
         checkResult();
       });
 
