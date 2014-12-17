@@ -36,6 +36,30 @@ var lose = function () {
 };
 
 
+var inactiveCounter = (function () {
+  var bar = document.getElementById('inactive-bar');
+  var counter = document.getElementById('inactive-counter');
+
+  var value = 0;
+  var timer;
+
+  return {
+    start: function () {
+      bar.style.visibility = 'visible';
+      counter.textContent = value = 0;
+
+      timer = setInterval(function () {
+        counter.textContent = ++value;
+      }, 1000);
+    },
+    stop: function () {
+      clearInterval(timer);
+      bar.style.visibility = 'hidden';
+    }
+  };
+}());
+
+
 var Game = function (server) {
   return new EventEmitter().
     on('wait', function () {
@@ -118,10 +142,10 @@ var Game = function (server) {
 
         if (owner == game.player) {
           game.grid.disable();
-          humane.log('Wait...', { timeout: 0 });
+          inactiveCounter.start();
         }
         else {
-          humane.remove();
+          inactiveCounter.stop();
           game.grid.enable();
         }
 
