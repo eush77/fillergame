@@ -4,7 +4,9 @@ var Board = require('../game/newboard');
 
 var fzip = require('fzip')
   , extend = require('extend')
-  , thus = require('thus');
+  , thus = require('thus')
+  , dent = require('dent')
+  , block = require('block-scope');
 
 
 var protoGameHost = {
@@ -17,10 +19,10 @@ var protoGameHost = {
     this.games[bob.id] = alice;
 
     var board = Board({
-      width: 10,
-      height: 10,
+      width: this.width,
+      height: this.height,
       startColor: 1,
-      numColors: 3
+      numColors: this.numColors
     });
 
     var pAlice = { i: board.height - 1, j: 0 };
@@ -47,11 +49,41 @@ var protoGameHost = {
 
 
 /**
- * Create game host controller.
+ * Parse board size configuration string.
+ *
+ * @arg {string} size
+ * @return {height: number, width: number}
  */
-module.exports = function () {
-  return thus(Object.create(protoGameHost), function () {
-    this.games = {};
-    return this;
+var parseBoardSize = function (size) {
+  dent(size.toLowerCase().split('x'));
+
+  return {
+    height: dent.o[0],
+    width: dent.o[1]
+  };
+};
+
+
+/**
+ * Create game host controller.
+ *
+ * @arg {object} [options]
+ * @property {string} [size="10x10"] - Board size.
+ * @property {number} [numColors=3] - Number of spare colors.
+ * @return {GameHost}
+ */
+module.exports = function (options) {
+  options = options || {};
+  options.size = options.size || '10x10';
+  options.numColors = options.numColors || 3;
+
+  return block(parseBoardSize(options.size), function (boardSize) {
+    return thus(Object.create(protoGameHost), function () {
+      this.games = {};
+      this.height = boardSize.height;
+      this.width = boardSize.width;
+      this.numColors = options.numColors;
+      return this;
+    });
   });
 };

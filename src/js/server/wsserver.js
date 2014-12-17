@@ -1,14 +1,13 @@
 'use strict';
 
-var GameHost = require('./gamehost')
-  , Player = require('./player');
+var Player = require('./player');
 
 var WebSocketServer = require('ws').Server;
 
 
 var startWsServer = function (port) {
   var wsServer = new WebSocketServer({ port: port });
-  var game = GameHost();
+  var game = this.gameHost;
   var clientQueue = [];
 
   return wsServer.on('connection', function (socket) {
@@ -39,10 +38,12 @@ var startWsServer = function (port) {
 /**
  * Create WebSocket game server.
  *
+ * @arg {GameHost} gameHost
  * @return {WsServer}
  */
-module.exports = function () {
+module.exports = function (gameHost) {
   return {
-    listen: startWsServer
+    listen: startWsServer,
+    gameHost: gameHost
   };
 };

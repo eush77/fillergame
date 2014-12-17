@@ -2,17 +2,34 @@
 
 var wsconfig = require('../wsconfig.json')
   , WsServer = require('./server/wsserver')
-  , HttpServer = require('./server/httpserver');
+  , HttpServer = require('./server/httpserver')
+  , GameHost = require('./server/gamehost');
+
+var dasherize = require('dasherize');
 
 
-var httpPort = (function (argv) {
-  if (argv.length > 1) {
-    console.log('Usage:  server.js [<port>]');
-    process.exit(1);
-  }
-
-  return argv[0] || 5001;
-}(process.argv.slice(2)));
+var argv = require('yargs').
+  strict().
+  usage('Usage:  $0 [option]...').
+  help('help', 'Print this message').
+  options(dasherize({
+    port: {
+      alias: 'p',
+      default: 5001,
+      description: 'TCP port for the front-end HTTP server'
+    },
+    size: {
+      alias: 's',
+      default: '10x10',
+      description: 'Board size'
+    },
+    numColors: {
+      alias: 'c',
+      default: 3,
+      description: 'Number of spare colors'
+    }
+  })).
+  argv;
 
 
 /**
@@ -20,12 +37,18 @@ var httpPort = (function (argv) {
  *
  * @arg {number} port - Front-end HTTP server port.
  * @arg {number} wsport - Back-end WebSocket server port.
+ * @arg {object} [gameOptions] - Options passed to GameHost constructor.
  */
-var start = function (port, wsport) {
-  WsServer().listen(wsport);
+var start = function (port, wsport, gameOptions) {
+  var gameHost = GameHost(gameOptions || {});
+
+  WsServer(gameHost).listen(wsport);
   HttpServer().listen(port);
 
-  console.log('Server started at localhost:' + port);
+  console.log('Server started at port ' + port);
 };
 
-start(httpPort, wsconfig.port);
+start(argv.port, wsconfig.port, {
+  size: argv.size,
+  numColors: argv.numColors
+});
