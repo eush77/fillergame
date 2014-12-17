@@ -6,6 +6,22 @@ var CanvasGrid = require('canvas-grid')
 var EventEmitter = require('events').EventEmitter;
 
 
+var protoGrid = extend(new EventEmitter, {
+  fill: function (i, j, color) {
+    this.board.colors[i][j] = color;
+    this.canvasGrid.fillCell(j, i, this.palette[color].hexString());
+    return this;
+  },
+  on: function (type, listener) {
+    this.canvas.addEventListener(type, function (event) {
+      this.emit(type, event.gridInfo.y, event.gridInfo.x);
+    }.bind(this));
+
+    EventEmitter.prototype.on.call(this, type, listener);
+  }
+});
+
+
 /**
  * Create canvas grid object.
  *
@@ -29,22 +45,10 @@ module.exports = function (board, canvas, palette) {
     });
   });
 
-  // Create grid wrapper.
-  var grid = extend(new EventEmitter, {
-    fill: function (i, j, color) {
-      board.colors[i][j] = color;
-      canvasGrid.fillCell(j, i, palette[color].hexString());
-      return this;
-    }
+  return Object.create(protoGrid, {
+    board: { value: board },
+    canvas: { value: canvas },
+    palette: { value: palette },
+    canvasGrid: { value: canvasGrid }
   });
-
-  grid.on = function (type, listener) {
-    canvas.addEventListener(type, function (event) {
-      grid.emit(type, event.gridInfo.y, event.gridInfo.x);
-    });
-
-    EventEmitter.prototype.on.call(grid, type, listener);
-  };
-
-  return grid;
 };
