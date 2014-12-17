@@ -27,8 +27,8 @@ var protoGameHost = {
     var pBob = { i: 0, j: board.width - 1 };
 
     board.colorAt(pAlice, 0);
-    board.colorAt(pBob, 4);
-    board.numColors = 5;
+    board.colorAt(pBob, board.numColors + 1);
+    board.numColors += 2;
 
     var message = {
       code: 'start',
