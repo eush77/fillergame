@@ -10,7 +10,7 @@
     "images": "cp -v img/* dist",
     "html": "jade <src/html/index.jade >dist/index.html",
     "css": "stylus <src/css/main.styl |cat node_modules/normalize.css/normalize.css node_modules/humane-js/themes/boldlight.css - |autoprefixer |cleancss >dist/main.css",
-    "js": "browserify src/js/client.js |uglifyjs >dist/index.js",
+    "js": "browserify src/js/client.js |uglifyjs -mc warnings=false >dist/index.js",
     "test": "tape test/*.js",
     "start": "node src/js/server.js"
   },
