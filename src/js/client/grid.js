@@ -7,11 +7,21 @@ var EventEmitter = require('events').EventEmitter;
 
 
 var protoGrid = extend(new EventEmitter, {
+  /**
+   * Fill cell with color.
+   *
+   * @arg {number} i
+   * @arg {number} j
+   * @arg {number} color - According to the specified palette.
+   * @return {Grid}
+   */
   fill: function (i, j, color) {
     this.board.colors[i][j] = color;
     this.canvasGrid.fillCell(j, i, this.palette[color].hexString());
     return this;
   },
+
+  // Auto-subscribe to canvas events.
   on: function (type, listener) {
     this.canvas.addEventListener(type, function (event) {
       this.emit(type, event.gridInfo.y, event.gridInfo.x);
